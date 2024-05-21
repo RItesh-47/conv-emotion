@@ -458,6 +458,7 @@ class Model(nn.Module):
                 att_em, _= self.matchatt(emotions, t, mask=umask)
                 att_emotions.append(att_em.unsqueeze(0))
             att_emotions = torch.cat(att_emotions, dim=0)
+            hidden = F.relu(self.linear1(att_emotions))
 
 
             # att_emotions = []
