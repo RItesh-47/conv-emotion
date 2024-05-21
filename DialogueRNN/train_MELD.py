@@ -75,7 +75,8 @@ def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None,
         elif feature_type == "text":
             log_prob, alpha, alpha_f, alpha_b = model(textf, qmask,umask) # seq_len, batch, n_classes
         else:
-            log_prob, alpha, alpha_f, alpha_b = model(torch.cat((textf,acouf),dim=-1), qmask,umask) # seq_len, batch, n_classes
+            # log_prob, alpha, alpha_f, alpha_b = model(torch.cat((textf,acouf),dim=-1), qmask,umask) # seq_len, batch, n_classes
+            log_prob = model(torch.cat((textf,acouf),dim=-1), qmask,umask) #for using Model(real time with no future context)
         lp_ = log_prob.transpose(0,1).contiguous().view(-1,log_prob.size()[2]) # batch*seq_len, n_classes
         labels_ = label.view(-1) # batch*seq_len
         loss = loss_function(lp_, labels_, umask)
@@ -93,9 +94,9 @@ def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None,
 #                     writer.add_histogram(param[0], param[1].grad, epoch)
             optimizer.step()
         else:
-            alphas += alpha
-            alphas_f += alpha_f
-            alphas_b += alpha_b
+            # alphas += alpha
+            # alphas_f += alpha_f
+            # alphas_b += alpha_b
             vids += data[-1]
 
     if preds!=[]:
@@ -109,7 +110,7 @@ def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None,
     avg_accuracy = round(accuracy_score(labels,preds,sample_weight=masks)*100,2)
     avg_fscore = round(f1_score(labels,preds,sample_weight=masks,average='weighted')*100,2)
     class_report = classification_report(labels,preds,sample_weight=masks,digits=4)
-    return avg_loss, avg_accuracy, labels, preds, masks,avg_fscore, [alphas, alphas_f, alphas_b, vids], class_report
+    return avg_loss, avg_accuracy, labels, preds, masks,avg_fscore, vids, class_report
 
 cuda = torch.cuda.is_available()
 if cuda:
