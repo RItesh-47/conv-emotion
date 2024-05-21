@@ -446,23 +446,23 @@ class Model(nn.Module):
         qmask -> seq_len, batch, party
         """
 
-        emotions, _ = self.dialog_rnn(U, qmask) # seq_len, batch, D_e
+        emotions = self.dialog_rnn(U, qmask) # seq_len, batch, D_e
         #print(emotions)
         emotions = self.dropout_rec(emotions)
 
         #emotions = emotions.unsqueeze(1)
         if att2:
 
-            att_emotions = []
-            for t in emotions:
-                att_em, _ = self.matchatt(emotions, t, mask=umask)
-                att_emotions.append(att_em.unsqueeze(0))
-            att_emotions = torch.cat(att_emotions, dim=0)
-
-
             # att_emotions = []
             # for t in emotions:
-            #     att_emotions.append(self.matchatt(emotions,t,mask=umask)[0].unsqueeze(0))
+            #     att_em, _= self.matchatt(emotions, t, mask=umask)
+            #     att_emotions.append(att_em.unsqueeze(0))
+            # att_emotions = torch.cat(att_emotions, dim=0)
+
+
+            att_emotions = []
+            for t in emotions:
+                att_emotions.append(self.matchatt(emotions,t,mask=umask)[0].unsqueeze(0))
             att_emotions = torch.cat(att_emotions,dim=0)
             hidden = F.relu(self.linear1(att_emotions))
         else:
