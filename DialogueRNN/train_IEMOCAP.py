@@ -152,7 +152,7 @@ if __name__ == '__main__':
 
     D_a = 100 # concat attention
 
-    model = BiModel(D_m, D_g, D_p, D_e, D_h,
+    model = Model(D_m, D_g, D_p, D_e, D_h,
                     n_classes=n_classes,
                     listener_state=args.active_listener,
                     context_attention=args.attention,
