@@ -53,7 +53,8 @@ def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None,
     preds = []
     labels = []
     masks = []
-    alphas, alphas_f, alphas_b, vids = [], [], [], []
+    # alphas, alphas_f, alphas_b, vids = [], [], [], []
+    vids =[] #change for using Model instead of BiModel
     assert not train or optimizer!=None
     if train:
         model.train()
@@ -66,7 +67,8 @@ def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None,
         textf, visuf, acouf, qmask, umask, label =\
                 [d.cuda() for d in data[:-1]] if cuda else data[:-1]
         #log_prob = model(torch.cat((textf,acouf,visuf),dim=-1), qmask,umask,att2=True) # seq_len, batch, n_classes
-        log_prob, alpha, alpha_f, alpha_b = model(textf, qmask,umask,att2=True) # seq_len, batch, n_classes
+        # log_prob, alpha, alpha_f, alpha_b = model(textf, qmask,umask,att2=True) # seq_len, batch, n_classes, this will be used with BiModel
+        log_prob = model(textf, qmask,umask,att2=True) #used for Model as model(only past context)
         lp_ = log_prob.transpose(0,1).contiguous().view(-1,log_prob.size()[2]) # batch*seq_len, n_classes
         labels_ = label.view(-1) # batch*seq_len
         loss = loss_function(lp_, labels_, umask)
@@ -84,9 +86,9 @@ def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None,
                     writer.add_histogram(param[0], param[1].grad, epoch)
             optimizer.step()
         else:
-            alphas += alpha
-            alphas_f += alpha_f
-            alphas_b += alpha_b
+            # alphas += alpha       #uncomment this when using BiModel
+            # alphas_f += alpha_f
+            # alphas_b += alpha_b
             vids += data[-1]
 
     if preds!=[]:
@@ -99,7 +101,7 @@ def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None,
     avg_loss = round(np.sum(losses)/np.sum(masks),4)
     avg_accuracy = round(accuracy_score(labels,preds,sample_weight=masks)*100,2)
     avg_fscore = round(f1_score(labels,preds,sample_weight=masks,average='weighted')*100,2)
-    return avg_loss, avg_accuracy, labels, preds, masks,avg_fscore, [alphas, alphas_f, alphas_b, vids]
+    return avg_loss, avg_accuracy, labels, preds, masks,avg_fscore, vids
 
 if __name__ == '__main__':
 
