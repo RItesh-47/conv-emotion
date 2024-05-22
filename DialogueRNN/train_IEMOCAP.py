@@ -149,7 +149,8 @@ if __name__ == '__main__':
     cuda       = args.cuda
     n_epochs   = args.epochs
 
-    D_m = 100
+    # D_m = 100
+    D_m = 712 # for multimodal setting
     D_g = 500
     D_p = 500
     D_e = 300
@@ -157,7 +158,7 @@ if __name__ == '__main__':
 
     D_a = 100 # concat attention
 
-    model = Model(D_m*3, D_g, D_p, D_e, D_h,
+    model = Model(D_m, D_g, D_p, D_e, D_h,
                     n_classes=n_classes,
                     listener_state=args.active_listener,
                     context_attention=args.attention,
