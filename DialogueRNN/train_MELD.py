@@ -71,9 +71,9 @@ def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None,
         textf, acouf, qmask, umask, label =\
                 [d.cuda() for d in data[:-1]] if cuda else data[:-1]
         if feature_type == "audio":
-            log_prob, alpha, alpha_f, alpha_b = model(acouf, qmask,umask) # seq_len, batch, n_classes
+            log_prob= model(acouf, qmask,umask) # seq_len, batch, n_classes
         elif feature_type == "text":
-            log_prob, alpha, alpha_f, alpha_b = model(textf, qmask,umask) # seq_len, batch, n_classes
+            log_prob= model(textf, qmask,umask) # seq_len, batch, n_classes
         else:
             # log_prob, alpha, alpha_f, alpha_b = model(torch.cat((textf,acouf),dim=-1), qmask,umask) # seq_len, batch, n_classes
             log_prob = model(torch.cat((textf,acouf),dim=-1), qmask,umask) #for using Model(real time with no future context)
