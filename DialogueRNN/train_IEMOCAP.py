@@ -66,7 +66,7 @@ def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None,
         # import ipdb;ipdb.set_trace()
         textf, visuf, acouf, qmask, umask, label =\
                 [d.cuda() for d in data[:-1]] if cuda else data[:-1]
-        print(f'textf_size:{textf.size()}   visuf_size:{visuf}      acouf_size:{acouf}')
+        print(f'textf_size:{textf.size()}   visuf_size:{visuf.size()}      acouf_size:{acouf.size()}')
 
         
         log_prob = model(torch.cat((textf,acouf,visuf),dim=-1), qmask,umask,att2=True) # seq_len, batch, n_classes
