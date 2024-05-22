@@ -431,7 +431,7 @@ class Model(nn.Module):
         self.dropout   = nn.Dropout(dropout)
         #self.dropout_rec = nn.Dropout(0.2)
         self.dropout_rec = nn.Dropout(dropout+0.15)
-        self.dialog_rnn = DialogueRNN(D_m, D_g, D_p, D_e,listener_state,
+        self.dialog_rnn = DialogueRNN(D_m*3, D_g, D_p, D_e,listener_state,
                                     context_attention, D_a, dropout_rec)
         self.linear1     = nn.Linear(D_e, D_h)
         #self.linear2     = nn.Linear(D_h, D_h)
