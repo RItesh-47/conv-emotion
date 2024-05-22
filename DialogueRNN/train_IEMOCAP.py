@@ -69,9 +69,9 @@ def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None,
         # print(f'textf_size:{textf.size()}   visuf_size:{visuf.size()}      acouf_size:{acouf.size()}')
 
         
-        log_prob = model(torch.cat((textf,acouf),dim=-1), qmask,umask,att2=True) # seq_len, batch, n_classes
+        # log_prob = model(torch.cat((textf,acouf),dim=-1), qmask,umask,att2=True) # seq_len, batch, n_classes
         # log_prob, alpha, alpha_f, alpha_b = model(textf, qmask,umask,att2=True) # seq_len, batch, n_classes, this will be used with BiModel
-        # log_prob = model(textf, qmask,umask,att2=True) #used for Model as model(only past context)
+        log_prob = model(acouf, qmask,umask,att2=True) #used for Model as model(only past context)
         lp_ = log_prob.transpose(0,1).contiguous().view(-1,log_prob.size()[2]) # batch*seq_len, n_classes
         labels_ = label.view(-1) # batch*seq_len
         loss = loss_function(lp_, labels_, umask)
@@ -150,7 +150,7 @@ if __name__ == '__main__':
     n_epochs   = args.epochs
 
     # D_m = 100
-    D_m = 200 # for a+t setting
+    D_m = 100 # for a+t setting
     D_g = 500
     D_p = 500
     D_e = 300
