@@ -66,6 +66,9 @@ def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None,
         # import ipdb;ipdb.set_trace()
         textf, visuf, acouf, qmask, umask, label =\
                 [d.cuda() for d in data[:-1]] if cuda else data[:-1]
+        print(f'textf_size:{textf.size()}   visuf_size:{visuf}      acouf_size:{acouf}')
+
+        
         log_prob = model(torch.cat((textf,acouf,visuf),dim=-1), qmask,umask,att2=True) # seq_len, batch, n_classes
         # log_prob, alpha, alpha_f, alpha_b = model(textf, qmask,umask,att2=True) # seq_len, batch, n_classes, this will be used with BiModel
         # log_prob = model(textf, qmask,umask,att2=True) #used for Model as model(only past context)
@@ -154,7 +157,7 @@ if __name__ == '__main__':
 
     D_a = 100 # concat attention
 
-    model = Model(D_m, D_g, D_p, D_e, D_h,
+    model = Model(D_m*3, D_g, D_p, D_e, D_h,
                     n_classes=n_classes,
                     listener_state=args.active_listener,
                     context_attention=args.attention,
