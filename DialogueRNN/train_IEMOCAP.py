@@ -150,7 +150,7 @@ if __name__ == '__main__':
     n_epochs   = args.epochs
 
     # D_m = 100
-    D_m = 100 # for a+t setting
+    D_m = 200 # for a+t setting
     D_g = 500
     D_p = 500
     D_e = 300
