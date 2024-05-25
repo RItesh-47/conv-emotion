@@ -161,7 +161,7 @@ if classification_type.strip().lower() == 'emotion':
     n_classes = 7
     loss_weights = torch.FloatTensor([1.0,1.0,1.0,1.0,1.0,1.0,1.0])
 
-model = Model(D_m, D_g, D_p, D_e, D_h,
+model = BiModel(D_m, D_g, D_p, D_e, D_h,
                 n_classes=n_classes,
                 listener_state=active_listener,
                 context_attention=attention,
