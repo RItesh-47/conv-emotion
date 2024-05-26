@@ -184,7 +184,7 @@ writer = SummaryWriter()
 
 # choose between 'sentiment' or 'emotion'
 classification_type = 'emotion'
-feature_type = 'multimodal'
+feature_type = 'audio'
 
 data_path = 'DialogueRNN_features/MELD_features/'
 batch_size = 30

@@ -125,7 +125,7 @@ def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None,
         textf, visuf, acouf, qmask, umask, label =\
                 [d.cuda() for d in data[:-1]] if cuda else data[:-1]
         # log_prob = model(torch.cat((textf,acouf,visuf),dim=-1), qmask,umask,att2=True) # seq_len, batch, n_classes
-        log_prob, alpha, alpha_f, alpha_b = model(torch.cat((textf,acouf,visuf),dim=-1), qmask,umask,att2=True) # seq_len, batch, n_classes
+        log_prob, alpha, alpha_f, alpha_b = model(torch.cat((textf,acouf),dim=-1), qmask,umask,att2=True) # seq_len, batch, n_classes
         lp_ = log_prob.transpose(0,1).contiguous().view(-1,log_prob.size()[2]) # batch*seq_len, n_classes
         labels_ = label.view(-1) # batch*seq_len
         loss = loss_function(lp_, labels_, umask)
@@ -204,7 +204,7 @@ if __name__ == '__main__':
     n_epochs   = args.epochs
 
     # D_m = 100
-    D_m = 712 
+    D_m = 200 
     D_g = 500
     D_p = 500
     D_e = 300
