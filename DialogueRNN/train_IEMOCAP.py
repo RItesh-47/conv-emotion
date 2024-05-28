@@ -49,70 +49,13 @@ def get_IEMOCAP_loaders(path, batch_size=32, valid=0.1, num_workers=0, pin_memor
     return train_loader, valid_loader, test_loader
 
 # use for realtime setting
-# def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None, train=False):
-#     losses = []
-#     preds = []
-#     labels = []
-#     masks = []
-#     # alphas, alphas_f, alphas_b, vids = [], [], [], []
-#     vids =[] #change for using Model instead of BiModel
-#     assert not train or optimizer!=None
-#     if train:
-#         model.train()
-#     else:
-#         model.eval()
-#     for data in dataloader:
-#         if train:
-#             optimizer.zero_grad()
-#         # import ipdb;ipdb.set_trace()
-#         textf, visuf, acouf, qmask, umask, label =\
-#                 [d.cuda() for d in data[:-1]] if cuda else data[:-1]
-#         # print(f'textf_size:{textf.size()}   visuf_size:{visuf.size()}      acouf_size:{acouf.size()}')
-
-        
-#         # log_prob = model(torch.cat((textf,acouf),dim=-1), qmask,umask,att2=True) # seq_len, batch, n_classes
-#         # log_prob, alpha, alpha_f, alpha_b = model(textf, qmask,umask,att2=True) # seq_len, batch, n_classes, this will be used with BiModel
-#         log_prob = model(textf, qmask,umask,att2=True) #used for Model as model(only past context)
-#         lp_ = log_prob.transpose(0,1).contiguous().view(-1,log_prob.size()[2]) # batch*seq_len, n_classes
-#         labels_ = label.view(-1) # batch*seq_len
-#         loss = loss_function(lp_, labels_, umask)
-
-#         pred_ = torch.argmax(lp_,1) # batch*seq_len
-#         preds.append(pred_.data.cpu().numpy())
-#         labels.append(labels_.data.cpu().numpy())
-#         masks.append(umask.view(-1).cpu().numpy())
-
-#         losses.append(loss.item()*masks[-1].sum())
-#         if train:
-#             loss.backward()
-#             if args.tensorboard:
-#                 for param in model.named_parameters():
-#                     writer.add_histogram(param[0], param[1].grad, epoch)
-#             optimizer.step()
-#         else:
-#             # alphas += alpha       #uncomment this when using BiModel
-#             # alphas_f += alpha_f
-#             # alphas_b += alpha_b
-#             vids += data[-1]
-
-#     if preds!=[]:
-#         preds  = np.concatenate(preds)
-#         labels = np.concatenate(labels)
-#         masks  = np.concatenate(masks)
-#     else:
-#         return float('nan'), float('nan'), [], [], [], float('nan'),[]
-
-#     avg_loss = round(np.sum(losses)/np.sum(masks),4)
-#     avg_accuracy = round(accuracy_score(labels,preds,sample_weight=masks)*100,2)
-#     avg_fscore = round(f1_score(labels,preds,sample_weight=masks,average='weighted')*100,2)
-#     return avg_loss, avg_accuracy, labels, preds, masks,avg_fscore, vids
-
 def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None, train=False):
     losses = []
     preds = []
     labels = []
     masks = []
-    alphas, alphas_f, alphas_b, vids = [], [], [], []
+    # alphas, alphas_f, alphas_b, vids = [], [], [], []
+    vids =[] #change for using Model instead of BiModel
     assert not train or optimizer!=None
     if train:
         model.train()
@@ -124,8 +67,12 @@ def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None,
         # import ipdb;ipdb.set_trace()
         textf, visuf, acouf, qmask, umask, label =\
                 [d.cuda() for d in data[:-1]] if cuda else data[:-1]
-        # log_prob = model(torch.cat((textf,acouf),dim=-1), qmask,umask,att2=True) # seq_len, batch, n_classes
-        log_prob, alpha, alpha_f, alpha_b = model(torch.cat((textf,acouf, visuf),dim=-1), qmask,umask,att2=True) # seq_len, batch, n_classes
+        # print(f'textf_size:{textf.size()}   visuf_size:{visuf.size()}      acouf_size:{acouf.size()}')
+
+        
+        log_prob = model(torch.cat((textf, visuf, acouf),dim=-1), qmask,umask,att2=True) # seq_len, batch, n_classes
+        # log_prob, alpha, alpha_f, alpha_b = model(textf, qmask,umask,att2=True) # seq_len, batch, n_classes, this will be used with BiModel
+        # log_prob = model(textf, qmask,umask,att2=True) #used for Model as model(only past context)
         lp_ = log_prob.transpose(0,1).contiguous().view(-1,log_prob.size()[2]) # batch*seq_len, n_classes
         labels_ = label.view(-1) # batch*seq_len
         loss = loss_function(lp_, labels_, umask)
@@ -143,9 +90,9 @@ def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None,
                     writer.add_histogram(param[0], param[1].grad, epoch)
             optimizer.step()
         else:
-            alphas += alpha
-            alphas_f += alpha_f
-            alphas_b += alpha_b
+            # alphas += alpha       #uncomment this when using BiModel
+            # alphas_f += alpha_f
+            # alphas_b += alpha_b
             vids += data[-1]
 
     if preds!=[]:
@@ -158,7 +105,60 @@ def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None,
     avg_loss = round(np.sum(losses)/np.sum(masks),4)
     avg_accuracy = round(accuracy_score(labels,preds,sample_weight=masks)*100,2)
     avg_fscore = round(f1_score(labels,preds,sample_weight=masks,average='weighted')*100,2)
-    return avg_loss, avg_accuracy, labels, preds, masks,avg_fscore, [alphas, alphas_f, alphas_b, vids]
+    return avg_loss, avg_accuracy, labels, preds, masks,avg_fscore, vids
+
+# def train_or_eval_model(model, loss_function, dataloader, epoch, optimizer=None, train=False):
+#     losses = []
+#     preds = []
+#     labels = []
+#     masks = []
+#     alphas, alphas_f, alphas_b, vids = [], [], [], []
+#     assert not train or optimizer!=None
+#     if train:
+#         model.train()
+#     else:
+#         model.eval()
+#     for data in dataloader:
+#         if train:
+#             optimizer.zero_grad()
+#         # import ipdb;ipdb.set_trace()
+#         textf, visuf, acouf, qmask, umask, label =\
+#                 [d.cuda() for d in data[:-1]] if cuda else data[:-1]
+#         log_prob = model(torch.cat((textf,acouf),dim=-1), qmask,umask,att2=True) # seq_len, batch, n_classes
+#         # log_prob, alpha, alpha_f, alpha_b = model(torch.cat((textf,acouf, visuf),dim=-1), qmask,umask,att2=True) # seq_len, batch, n_classes
+#         lp_ = log_prob.transpose(0,1).contiguous().view(-1,log_prob.size()[2]) # batch*seq_len, n_classes
+#         labels_ = label.view(-1) # batch*seq_len
+#         loss = loss_function(lp_, labels_, umask)
+
+#         pred_ = torch.argmax(lp_,1) # batch*seq_len
+#         preds.append(pred_.data.cpu().numpy())
+#         labels.append(labels_.data.cpu().numpy())
+#         masks.append(umask.view(-1).cpu().numpy())
+
+#         losses.append(loss.item()*masks[-1].sum())
+#         if train:
+#             loss.backward()
+#             if args.tensorboard:
+#                 for param in model.named_parameters():
+#                     writer.add_histogram(param[0], param[1].grad, epoch)
+#             optimizer.step()
+#         else:
+#             alphas += alpha
+#             alphas_f += alpha_f
+#             alphas_b += alpha_b
+#             vids += data[-1]
+
+#     if preds!=[]:
+#         preds  = np.concatenate(preds)
+#         labels = np.concatenate(labels)
+#         masks  = np.concatenate(masks)
+#     else:
+#         return float('nan'), float('nan'), [], [], [], float('nan'),[]
+
+#     avg_loss = round(np.sum(losses)/np.sum(masks),4)
+#     avg_accuracy = round(accuracy_score(labels,preds,sample_weight=masks)*100,2)
+#     avg_fscore = round(f1_score(labels,preds,sample_weight=masks,average='weighted')*100,2)
+#     return avg_loss, avg_accuracy, labels, preds, masks,avg_fscore, [alphas, alphas_f, alphas_b, vids]
 
 if __name__ == '__main__':
 
@@ -212,7 +212,7 @@ if __name__ == '__main__':
 
     D_a = 100 # concat attention
 
-    model = BiModel(D_m, D_g, D_p, D_e, D_h,
+    model = Model(D_m, D_g, D_p, D_e, D_h,
                     n_classes=n_classes,
                     listener_state=args.active_listener,
                     context_attention=args.attention,
